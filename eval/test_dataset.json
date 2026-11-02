@@ -1,0 +1,18 @@
+[
+  {
+    "question": "What types of anomalies should the AI/ML-based counting system detect?",
+    "reference": "The system must identify double/skipped counting, manual bypassing, rejected units, jammed lines, and unusual stoppages."
+  },
+  {
+    "question": "Does the video monitoring system depend on external network connectivity to continue recording?",
+    "reference": "No. The system must operate fully independently with its own servers, storage, networking, and application stack, and continue functioning and recording during network outages."
+  },
+  {
+    "question": "What critical production points must have continuous high-definition video coverage?",
+    "reference": "Forming, filling, rolling, pressing, packaging, stamping, labelling, palletizing, and dispatch."
+  },
+  {
+    "question": "What is the warranty period for the industrial IP cameras?",
+    "reference": "The document does not specify a warranty period for the industrial IP cameras."
+  }
+]
