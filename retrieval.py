@@ -2,11 +2,13 @@ import os
 
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain_community.vectorstores import FAISS
+from langfuse import observe
+from langfuse.langchain import CallbackHandler
 
 INDEX_DIR = "faiss_index"
 EMBEDDING_MODEL = "models/gemini-embedding-001"
 CHAT_MODEL = "gemini-3.1-flash-lite"
-TOP_K = 1
+TOP_K = 4
 
 PROMPT_TEMPLATE = """You are a helpful assistant answering questions about a video \
 monitoring requirements document. Use ONLY the context below to answer. \
@@ -53,21 +55,28 @@ class RAGService:
             model=self._chat_model, 
             temperature=0.7,
             max_output_tokens=1024
-     )
+        )
 
+    @observe(name="faiss_retrieval")
     def retrieve(self, question: str) -> list:
         if self.vectorstore is None:
             raise RuntimeError("RAGService.load() must be called before retrieving.")
         return self.vectorstore.similarity_search(question, k=self.top_k)
 
+    @observe(name="rag_pipeline")
     def answer(self, question: str) -> tuple[str, list[str]]:
         docs = self.retrieve(question)
         context = "\n\n---\n\n".join(doc.page_content for doc in docs)
         prompt = PROMPT_TEMPLATE.format(context=context, question=question)
 
-        response = self.llm.invoke(prompt)
+        # Langfuse CallbackHandler for LangChain
+        langfuse_handler = CallbackHandler()
+
+        response = self.llm.invoke(prompt, config={"callbacks": [langfuse_handler]})
         sources = sorted({doc.page_content.split("\n")[0] for doc in docs})
-        return self._extract_text(response.content), sources
+        answer_text = self._extract_text(response.content)
+
+        return answer_text, sources
 
     @staticmethod
     def _extract_text(content) -> str:
