@@ -7,7 +7,3 @@ fastapi
 uvicorn
 python-dotenv
 google-genai
-ragas
-datasets
-deepeval
-pytest
